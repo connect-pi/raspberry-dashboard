@@ -9,7 +9,7 @@ export default defineNuxtConfig({
       fallback: "light",
    },
 
-   css: ["assets/fonts/NOTHING/style.css"],
+   css: ["assets/fonts/NOTHING/style.css", "/assets/fonts/ChakraPetch/style.css"],
 
    devServer: {
       port: 3000,

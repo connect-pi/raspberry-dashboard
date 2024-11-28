@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="font-chakra">
     <NuxtPage />
   </div>
 </template>

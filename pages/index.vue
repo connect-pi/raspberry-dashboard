@@ -1,5 +1,5 @@
 <template>
-   <UContainer class="py-8">
+   <UContainer class="py-8 chakra-petch-regular">
       <!-- Header -->
       <div class="flex items-center justify-between mb-8">
          <div>
