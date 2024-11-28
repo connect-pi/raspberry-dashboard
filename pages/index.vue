@@ -2,10 +2,10 @@
    <UContainer class="py-8 chakra-petch-regular">
       <!-- Header -->
       <div class="flex items-center justify-between mb-8">
-         <div class="flex gap-3 items-center justify-center">
-            <UIcon name="i-heroicons-signal" class="text-primary-500 text-[30px] -mb-[2px] block" />
+         <div class="flex gap-2 md:gap-3 items-center justify-center">
+            <UIcon name="i-heroicons-signal" class="text-primary-500 text-[30px] block" />
             <div>
-               <h1 class="text-3xl font-nothing">Connect Pi</h1>
+               <h1 class="md:text-3xl text-2xl font-nothing">Connect Pi</h1>
                <!-- <p class="text-gray-500 dark:text-gray-400 md:block hidden">
                   Raspberry Pi Dashboard
                </p> -->
