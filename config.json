@@ -1,0 +1,77 @@
+{
+    "inbounds": [
+      {
+        "port": 1081,
+        "protocol": "dokodemo-door",
+        "settings": {
+          "network": "tcp",
+          "followRedirect": true
+        },
+        "sniffing": {
+          "enabled": true,
+          "destOverride": ["http", "tls"]
+        }
+      }
+    ],
+    "outbounds": [
+      {
+        "protocol": "vless",
+        "settings": {
+          "vnext": [
+            {
+              "address": "shampoo-sire-parzhak.online",
+              "port": 2314,
+              "users": [
+                {
+                  "id": "76422776-47ff-43e6-96f9-2bcdb345f07d",
+                  "encryption": "none"
+                }
+              ]
+            }
+          ]
+        },
+        "streamSettings": {
+          "network": "tcp",
+          "security": "none",
+          "tcpSettings": {
+            "header": {
+              "type": "http",
+              "request": {
+                "headers": {
+                  "Host": ["speedtest.net"]
+                },
+                "path": ["/"]
+              }
+            }
+          }
+        },
+        "tag": "proxy"
+      },
+      {
+        "tag": "direct",
+        "protocol": "freedom",
+        "settings": {}
+      }
+    ],
+    "routing": {
+      "domainStrategy": "IPIfNonMatch",
+      "rules": [
+        {
+          "type": "field",
+          "ip": ["geoip:ir", "geoip:private"],
+          "outboundTag": "direct"
+        },
+        {
+          "type": "field",
+          "domain": ["regexp:.*\\.ir$"],
+          "outboundTag": "direct"
+        },
+        {
+          "type": "field",
+          "network": "tcp,udp",
+          "outboundTag": "proxy"
+        }
+      ]
+    }
+  }
+  
