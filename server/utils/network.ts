@@ -11,6 +11,8 @@ export interface ConnectedDevice {
   connectedTime: string
   txBytes: string
   rxBytes: string
+  rxBitrate: string
+  txBitrate: string
 }
 
 export interface NetworkInfo {
@@ -48,43 +50,41 @@ export async function getNetworkInfo(): Promise<NetworkInfo> {
 
 async function getConnectedDevices(): Promise<ConnectedDevice[]> {
   try {
-    // Get station dump information using sudo
+    // Get station dump information
     const { stdout: stationDump } = await execAsync('sudo iw dev wlan0 station dump')
     
     // Parse station dump
-    const stations = stationDump.split('Station')
+    return stationDump
+      .split('Station')
       .filter(station => station.trim())
       .map(station => {
-        const macAddress = station.match(/([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})/)?.[0] || ''
-        const signalStrength = station.match(/signal:\s+([-\d]+)\s+dBm/)?.[1] || 'N/A'
-        const connectedTime = station.match(/connected time:\s+(\d+)\s+seconds/)?.[1] || 'N/A'
-        const txBytes = station.match(/tx bytes:\s+(\d+)/)?.[1] || '0'
-        const rxBytes = station.match(/rx bytes:\s+(\d+)/)?.[1] || '0'
-
-        // Try to get IP from dhcp leases
-        let ipAddress = 'N/A'
-        try {
-          const { stdout: leases } = execAsync('cat /var/lib/misc/dnsmasq.leases')
-          const lease = leases.split('\n').find(line => line.includes(macAddress))
-          if (lease) {
-            ipAddress = lease.split(' ')[2]
-          }
-        } catch {
-          // Ignore errors
+        const lines = station.split('\n')
+        const macAddress = lines[0].trim().split(' ')[0]
+        
+        // Helper function to get value from lines
+        const getValue = (key: string): string => {
+          const line = lines.find(l => l.includes(key))
+          return line ? line.split(':')[1].trim() : 'N/A'
         }
+
+        const rxBytes = parseInt(getValue('rx bytes'))
+        const txBytes = parseInt(getValue('tx bytes'))
+        const connectedTime = parseInt(getValue('connected time'))
+        const txBitrate = getValue('tx bitrate')
+        const rxBitrate = getValue('rx bitrate')
 
         return {
           macAddress,
-          ipAddress,
-          hostname: 'Unknown', // We'll implement this later if needed
-          signalStrength: `${signalStrength} dBm`,
-          connectedTime: formatConnectedTime(parseInt(connectedTime)),
-          txBytes: formatBytes(parseInt(txBytes)),
-          rxBytes: formatBytes(parseInt(rxBytes))
+          ipAddress: 'N/A', // We can implement DHCP lease lookup later if needed
+          hostname: macAddress.replace(/:/g, '-'), // Using MAC as hostname for now
+          signalStrength: 'N/A', // Signal strength not shown in output
+          connectedTime: formatConnectedTime(connectedTime),
+          txBytes: formatBytes(txBytes),
+          rxBytes: formatBytes(rxBytes),
+          txBitrate,
+          rxBitrate
         }
       })
-
-    return stations
   } catch (error) {
     console.error('Error getting connected devices:', error)
     return []
@@ -92,7 +92,7 @@ async function getConnectedDevices(): Promise<ConnectedDevice[]> {
 }
 
 function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B'
+  if (isNaN(bytes)) return '0 B'
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
