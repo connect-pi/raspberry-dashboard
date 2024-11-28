@@ -1,5 +1,5 @@
 <template>
-   <UContainer class="py-8 font-nothing">
+   <UContainer class="py-8">
       <!-- Header -->
       <div class="flex items-center justify-between mb-8">
          <div>
@@ -31,7 +31,7 @@
                   <h3 class="text-base font-medium">CPU Load</h3>
                </div>
             </template>
-            <p class="text-2xl font-semibold">
+            <p class="text-2xl font-semibold font-nothing">
                {{ systemStats?.cpuUsage?.toFixed(2) || "0" }}%
             </p>
             <UProgress
@@ -47,7 +47,7 @@
                   <h3 class="text-base font-medium">Memory Usage</h3>
                </div>
             </template>
-            <p class="text-2xl font-semibold">
+            <p class="text-2xl font-semibold font-nothing">
                {{ systemStats?.memory?.usage || "0" }}%
             </p>
             <UProgress
@@ -63,7 +63,7 @@
                   <h3 class="text-base font-medium">Network</h3>
                </div>
             </template>
-            <p class="text-2xl font-semibold">
+            <p class="text-2xl font-semibold font-nothing">
                {{ systemStats?.network?.connectedClients || 0 }}
             </p>
             <p class="text-sm text-gray-500 dark:text-gray-400">Connected Clients</p>
@@ -76,7 +76,7 @@
                   <h3 class="text-base font-medium">Uptime</h3>
                </div>
             </template>
-            <p class="text-2xl font-semibold">
+            <p class="text-2xl font-semibold font-nothing">
                {{ formatUptime(systemStats?.uptime || 0) }}
             </p>
          </UCard>
@@ -99,7 +99,7 @@
          <div class="space-y-4">
             <div class="flex items-center justify-between">
                <span class="text-gray-500 dark:text-gray-400">IP Address</span>
-               <span class="font-mono">
+               <span class="font-nothing">
                   {{ systemStats?.network?.ipAddress || "N/A" }}
                </span>
             </div>
@@ -107,7 +107,7 @@
                <span class="text-gray-500 dark:text-gray-400">
                   Network Interface
                </span>
-               <span class="font-mono">
+               <span class="font-nothing">
                   {{ systemStats?.network?.interface || "N/A" }}
                </span>
             </div>
@@ -115,7 +115,7 @@
                <span class="text-gray-500 dark:text-gray-400">
                   Connected Clients
                </span>
-               <span class="font-mono">
+               <span class="font-nothing">
                   {{ systemStats?.network?.connectedClients || 0 }}
                </span>
             </div>
