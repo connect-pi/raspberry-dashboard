@@ -30,51 +30,46 @@ export default defineEventHandler(async () => {
 
 async function getNetworkInfo() {
   try {
-    // Get all network interfaces
-    const networkInterfaces = os.networkInterfaces()
-    
-    // Find WiFi interface (usually en0 on Mac)
-    const wifiInterface = Object.entries(networkInterfaces).find(([name]) => 
-      name.startsWith('en0') || name.startsWith('wlan')
-    )
+    // Get IP address
+    const { stdout: ipInfo } = await execAsync('hostname -I')
+    const ipAddress = ipInfo.trim().split(' ')[0]
 
-    if (wifiInterface) {
-      const ipv4Address = wifiInterface[1]?.find(addr => addr.family === 'IPv4')
-      return {
-        ipAddress: ipv4Address?.address || 'N/A',
-        interface: wifiInterface[0],
-        connectedClients: 'N/A' // This info isn't easily available on Mac
+    // Get connected clients using iw
+    let connectedClients = 0
+    try {
+      // First try with nl80211 interface
+      const { stdout: stationDump } = await execAsync('iw dev wlan0 station dump')
+      connectedClients = (stationDump.match(/Station/g) || []).length
+    } catch {
+      try {
+        // If iw fails, try with hostapd_cli
+        const { stdout: clientList } = await execAsync('hostapd_cli list_sta')
+        connectedClients = clientList.trim().split('\n').filter(line => line.length > 0).length
+      } catch (e) {
+        console.error('Failed to get client count:', e)
+        connectedClients = 0
       }
     }
-
+    
     return {
-      ipAddress: 'N/A',
-      interface: 'Not found',
-      connectedClients: 'N/A'
+      ipAddress,
+      connectedClients,
+      interface: 'wlan0'
     }
   } catch (error) {
     console.error('Error getting network info:', error)
     return {
       ipAddress: 'N/A',
-      interface: 'Error',
-      connectedClients: 'N/A'
+      connectedClients: 0,
+      interface: 'Error'
     }
   }
 }
 
 async function getV2rayStatus() {
   try {
-    // Check if running on Mac
-    const { stdout: platformCheck } = await execAsync('uname')
-    if (platformCheck.trim() === 'Darwin') {
-      // Mac-specific V2Ray check (if you have V2Ray installed via brew)
-      const { stdout } = await execAsync('brew services list | grep v2ray')
-      return stdout.includes('started')
-    } else {
-      // Linux check
-      const { stdout } = await execAsync('systemctl is-active v2ray')
-      return stdout.trim() === 'active'
-    }
+    const { stdout } = await execAsync('systemctl is-active v2ray')
+    return stdout.trim() === 'active'
   } catch {
     return false
   }
