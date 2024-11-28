@@ -2,11 +2,14 @@
    <UContainer class="py-8 chakra-petch-regular">
       <!-- Header -->
       <div class="flex items-center justify-between mb-8">
-         <div>
-            <h1 class="text-3xl font-bold">Raspberry Pi Dashboard</h1>
-            <p class="text-gray-500 dark:text-gray-400">
-               System monitoring and network management
-            </p>
+         <div class="flex gap-3 items-center justify-center">
+            <UIcon name="i-heroicons-signal" class="text-primary-500 text-[30px] -mb-[2px] block" />
+            <div>
+               <h1 class="text-3xl font-nothing">Connect Pi</h1>
+               <!-- <p class="text-gray-500 dark:text-gray-400 md:block hidden">
+                  Raspberry Pi Dashboard
+               </p> -->
+            </div>
          </div>
          <!-- Theme and Refresh Controls -->
          <div class="flex items-center space-x-2">
@@ -27,7 +30,9 @@
          <UCard class="u-cart">
             <template #header>
                <div class="flex items-center space-x-2">
-                  <UIcon name="i-heroicons-cpu-chip" class="text-primary-500 text-xl" />
+                  <UIcon
+                     name="i-heroicons-cpu-chip"
+                     class="text-primary-500 text-xl" />
                   <h3 class="text-base font-medium">CPU Load</h3>
                </div>
             </template>
@@ -43,7 +48,9 @@
          <UCard class="u-cart">
             <template #header>
                <div class="flex items-center space-x-2">
-                  <UIcon name="i-heroicons-circle-stack" class="text-amber-500 text-xl" />
+                  <UIcon
+                     name="i-heroicons-circle-stack"
+                     class="text-amber-500 text-xl" />
                   <h3 class="text-base font-medium">Memory Usage</h3>
                </div>
             </template>
