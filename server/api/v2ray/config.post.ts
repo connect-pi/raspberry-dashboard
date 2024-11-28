@@ -8,8 +8,8 @@ export default defineEventHandler(async (event) => {
   try {
     const config = await readBody(event)
     
-    // Save configuration to file
-    await writeFile('/etc/v2ray/config.json', JSON.stringify(config, null, 2))
+    // Save configuration to correct path
+    await writeFile('/usr/local/etc/v2ray/config.json', JSON.stringify(config, null, 2))
     
     // Restart V2Ray service
     await execAsync('sudo systemctl restart v2ray')
@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     console.error('Error updating V2Ray config:', error)
     throw createError({
       statusCode: 500,
-      message: 'Failed to update V2Ray configuration'
+      message: error.message || 'Failed to update V2Ray configuration'
     })
   }
 })
