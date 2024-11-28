@@ -39,9 +39,6 @@
                </template>
             </DashboardCard>
          </div>
-
-         <!-- V2ray config -->
-         <V2RayConfig />
       </div>
    </div>
 </template>
