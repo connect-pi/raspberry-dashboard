@@ -1,11 +1,21 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: ['@nuxtjs/tailwindcss'],
-
-  // Development server configuration
-  devServer: {
-    port: 3000
+  modules: ['@nuxt/ui'],
+  ssr: false,
+  
+  // Color Mode Configuration
+  colorMode: {
+    classSuffix: '',
+    preference: 'system', // Let user control the theme
+    fallback: 'light'
   },
 
-  compatibilityDate: '2024-11-28'
+  // UI configuration
+  ui: {
+    primary: 'emerald',
+    gray: 'cool'
+  },
+
+  devServer: {
+    port: 3000
+  }
 })
