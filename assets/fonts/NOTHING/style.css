@@ -1,0 +1,12 @@
+@font-face {
+    font-family: 'Nothing';
+    src: url('NOTHING.otf.woff2') format('woff2'),
+         url('NOTHING.otf.woff') format('woff'),
+         url('NOTHING.otf.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.font-nothing {
+    font-family: 'Nothing', sans-serif;
+}

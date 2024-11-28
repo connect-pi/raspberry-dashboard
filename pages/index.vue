@@ -1,5 +1,5 @@
 <template>
-   <UContainer class="py-8">
+   <UContainer class="py-8 font-nothing">
       <!-- Header -->
       <div class="flex items-center justify-between mb-8">
          <div>
@@ -27,7 +27,7 @@
          <UCard class="u-cart">
             <template #header>
                <div class="flex items-center space-x-2">
-                  <UIcon name="i-heroicons-cpu-chip" class="text-primary-500" />
+                  <UIcon name="i-heroicons-cpu-chip" class="text-primary-500 text-xl" />
                   <h3 class="text-base font-medium">CPU Load</h3>
                </div>
             </template>
@@ -43,7 +43,7 @@
          <UCard class="u-cart">
             <template #header>
                <div class="flex items-center space-x-2">
-                  <UIcon name="i-heroicons-circle-stack" class="text-amber-500" />
+                  <UIcon name="i-heroicons-circle-stack" class="text-amber-500 text-xl" />
                   <h3 class="text-base font-medium">Memory Usage</h3>
                </div>
             </template>
@@ -59,7 +59,7 @@
          <UCard class="u-cart">
             <template #header>
                <div class="flex items-center space-x-2">
-                  <UIcon name="i-heroicons-signal" class="text-rose-500" />
+                  <UIcon name="i-heroicons-signal" class="text-rose-500 text-xl" />
                   <h3 class="text-base font-medium">Network</h3>
                </div>
             </template>
@@ -72,7 +72,7 @@
          <UCard class="u-cart">
             <template #header>
                <div class="flex items-center space-x-2">
-                  <UIcon name="i-heroicons-clock" class="text-blue-500" />
+                  <UIcon name="i-heroicons-clock" class="text-blue-500 text-xl" />
                   <h3 class="text-base font-medium">Uptime</h3>
                </div>
             </template>
@@ -88,7 +88,7 @@
             <div class="flex items-center justify-between">
                <h3 class="text-lg font-medium">Network Status</h3>
                <UBadge
-                  :color="systemStats?.v2rayStatus ? 'emerald' : 'red'"
+                  :color="systemStats?.v2rayStatus ? 'primary' : 'red'"
                   variant="subtle"
                   class="ml-2">
                   V2Ray {{ systemStats?.v2rayStatus ? "Active" : "Inactive" }}

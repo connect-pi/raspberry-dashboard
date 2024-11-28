@@ -1,21 +1,17 @@
 export default defineNuxtConfig({
-  modules: ['@nuxt/ui'],
-  ssr: false,
-  
-  // Color Mode Configuration
-  colorMode: {
-    classSuffix: '',
-    preference: 'system', // Let user control the theme
-    fallback: 'light'
-  },
+   modules: ["@nuxt/ui"],
+   ssr: true,
 
-  // UI configuration
-  ui: {
-    primary: 'emerald',
-    gray: 'cool'
-  },
+   // Color Mode Configuration
+   colorMode: {
+      classSuffix: "",
+      preference: "system", // Let user control the theme
+      fallback: "light",
+   },
 
-  devServer: {
-    port: 3000
-  }
-})
+   css: ["assets/fonts/NOTHING/style.css"],
+
+   devServer: {
+      port: 3000,
+   },
+});
