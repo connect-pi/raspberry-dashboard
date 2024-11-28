@@ -3,7 +3,7 @@
     <div class="max-w-7xl mx-auto">
       <h1 class="text-3xl font-bold mb-8">Raspberry Pi Dashboard</h1>
       
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <!-- System Status Card -->
         <DashboardCard title="System Status">
           <template v-if="systemStats">
@@ -21,9 +21,6 @@
                 :value="formatUptime(systemStats.uptime)"
               />
             </div>
-          </template>
-          <template v-else>
-            <div class="text-gray-500">Loading system information...</div>
           </template>
         </DashboardCard>
 
@@ -46,11 +43,14 @@
               />
             </div>
           </template>
-          <template v-else>
-            <div class="text-gray-500">Loading network information...</div>
-          </template>
         </DashboardCard>
       </div>
+
+      <!-- Connected Devices Table -->
+      <ConnectedDevices
+        v-if="systemStats?.network.connectedDevices"
+        :devices="systemStats.network.connectedDevices"
+      />
     </div>
   </div>
 </template>
