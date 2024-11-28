@@ -48,43 +48,35 @@ export async function getNetworkInfo(): Promise<NetworkInfo> {
 
 async function getConnectedDevices(): Promise<ConnectedDevice[]> {
   try {
-    // Get station dump information
-    const { stdout: stationDump } = await execAsync('iw dev wlan0 station dump')
+    // Get station dump information using sudo
+    const { stdout: stationDump } = await execAsync('sudo iw dev wlan0 station dump')
     
-    // Get ARP table for IP and hostname mapping
-    const { stdout: arpTable } = await execAsync('arp -a')
-    
-    // Create function to get hostname
-    async function getHostname(ip: string): Promise<string> {
-      try {
-        const { stdout: hostnameResult } = await execAsync(`host ${ip}`)
-        return hostnameResult.split(' ').pop()?.trim() || 'Unknown'
-      } catch {
-        return 'Unknown'
-      }
-    }
-
     // Parse station dump
-    const stationPromises = stationDump.split('Station')
+    const stations = stationDump.split('Station')
       .filter(station => station.trim())
-      .map(async station => {
+      .map(station => {
         const macAddress = station.match(/([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})/)?.[0] || ''
         const signalStrength = station.match(/signal:\s+([-\d]+)\s+dBm/)?.[1] || 'N/A'
         const connectedTime = station.match(/connected time:\s+(\d+)\s+seconds/)?.[1] || 'N/A'
         const txBytes = station.match(/tx bytes:\s+(\d+)/)?.[1] || '0'
         const rxBytes = station.match(/rx bytes:\s+(\d+)/)?.[1] || '0'
 
-        // Find IP from ARP table
-        const arpEntry = arpTable.match(new RegExp(`\\((.+)\\) at ${macAddress}`))
-        const ipAddress = arpEntry?.[1] || 'N/A'
-        
-        // Get hostname
-        const hostname = await getHostname(ipAddress)
+        // Try to get IP from dhcp leases
+        let ipAddress = 'N/A'
+        try {
+          const { stdout: leases } = execAsync('cat /var/lib/misc/dnsmasq.leases')
+          const lease = leases.split('\n').find(line => line.includes(macAddress))
+          if (lease) {
+            ipAddress = lease.split(' ')[2]
+          }
+        } catch {
+          // Ignore errors
+        }
 
         return {
           macAddress,
           ipAddress,
-          hostname,
+          hostname: 'Unknown', // We'll implement this later if needed
           signalStrength: `${signalStrength} dBm`,
           connectedTime: formatConnectedTime(parseInt(connectedTime)),
           txBytes: formatBytes(parseInt(txBytes)),
@@ -92,7 +84,7 @@ async function getConnectedDevices(): Promise<ConnectedDevice[]> {
         }
       })
 
-    return await Promise.all(stationPromises)
+    return stations
   } catch (error) {
     console.error('Error getting connected devices:', error)
     return []
