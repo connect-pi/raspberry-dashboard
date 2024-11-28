@@ -15,9 +15,21 @@ export async function getNetworkInfo(): Promise<NetworkInfo> {
     const { stdout: ipInfo } = await execAsync('hostname -I')
     const ipAddress = ipInfo.trim().split(' ')[0]
 
-    // Get number of connected clients
-    const { stdout: stationDump } = await execAsync('sudo iw dev wlan0 station dump | grep Station | wc -l')
-    const connectedClients = parseInt(stationDump.trim()) || 0
+    // Try different methods to get connected clients count
+    let connectedClients = 0
+    try {
+      // First try with iw
+      const { stdout } = await execAsync('iw dev wlan0 station dump | grep Station | wc -l')
+      connectedClients = parseInt(stdout.trim()) || 0
+    } catch {
+      try {
+        // If iw fails, try hostapd_cli
+        const { stdout } = await execAsync('hostapd_cli list_sta | wc -l')
+        connectedClients = parseInt(stdout.trim()) || 0
+      } catch (e) {
+        console.error('Failed to get client count:', e)
+      }
+    }
     
     return {
       ipAddress,
