@@ -45,12 +45,6 @@
           </template>
         </DashboardCard>
       </div>
-
-      <!-- Connected Devices Table -->
-      <ConnectedDevices
-        v-if="systemStats?.network.connectedDevices"
-        :devices="systemStats.network.connectedDevices"
-      />
     </div>
   </div>
 </template>
