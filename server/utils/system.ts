@@ -4,7 +4,7 @@ export interface SystemStats {
   memory: {
     total: number
     free: number
-    usage: string
+    usage: number
   }
   cpuUsage: number
   uptime: number
@@ -15,7 +15,7 @@ export function getSystemStats(): SystemStats {
     memory: {
       total: os.totalmem(),
       free: os.freemem(),
-      usage: ((1 - os.freemem() / os.totalmem()) * 100).toFixed(2)
+      usage: Number(((1 - os.freemem() / os.totalmem()) * 100).toFixed(2))
     },
     cpuUsage: os.loadavg()[0],
     uptime: os.uptime()
