@@ -6,9 +6,6 @@
             <UIcon name="i-heroicons-signal" class="text-primary-500 text-[30px] block" />
             <div>
                <h1 class="md:text-3xl text-2xl font-nothing">Connect Pi</h1>
-               <!-- <p class="text-gray-500 dark:text-gray-400 md:block hidden">
-                  Raspberry Pi Dashboard
-               </p> -->
             </div>
          </div>
          <!-- Theme and Refresh Controls -->
@@ -132,9 +129,12 @@
 </template>
 
 <script setup lang="ts">
+   import { ref, onMounted, onBeforeUnmount } from 'vue';
+
    const systemStats = ref(null);
    const loading = ref(false);
    let refreshInterval: NodeJS.Timer | null = null;
+   let socket: WebSocket | null = null;
 
    // Format uptime
    function formatUptime(seconds: number): string {
@@ -145,33 +145,47 @@
       return `${days}d ${hours}h ${minutes}m`;
    }
 
-   // Update system stats with error handling
-   async function refreshData() {
-      if (loading.value) return;
+   // Establish WebSocket connection
+   function setupWebSocket() {
+      socket = new WebSocket('ws://127.0.0.1:3001'); // WebSocket server address
 
-      loading.value = true;
-      try {
-         const response = await fetch("/api/stats");
-         if (!response.ok) throw new Error("Failed to fetch stats");
-
-         const data = await response.json();
+      socket.onmessage = (event) => {
+         const data = JSON.parse(event.data);
          systemStats.value = data;
-      } catch (error) {
-         console.error("Error fetching stats:", error);
-      } finally {
-         loading.value = false;
+      };
+
+      socket.onerror = (error) => {
+         console.error('WebSocket Error:', error);
+      };
+
+      socket.onopen = () => {
+         console.log('WebSocket connection established');
+      };
+
+      socket.onclose = () => {
+         console.log('WebSocket connection closed');
+      };
+   }
+
+   // Refresh data function
+   function refreshData() {
+      loading.value = true;
+      // Re-establish WebSocket connection to refresh data
+      if (socket) {
+         socket.close();
       }
+      setupWebSocket(); // Restart WebSocket connection
+      loading.value = false;
    }
 
    // Lifecycle hooks with cleanup
    onMounted(() => {
-      refreshData();
-      refreshInterval = setInterval(refreshData, 2000);
+      setupWebSocket(); // Start WebSocket connection
    });
 
    onBeforeUnmount(() => {
-      if (refreshInterval) {
-         clearInterval(refreshInterval);
+      if (socket) {
+         socket.close(); // Close WebSocket connection on component unmount
       }
    });
 </script>
