@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { Stats } from '~/types/common/Stats'
 
-const data = ref<Stats>()
-const loading = ref(false)
+const stats = ref<Stats>()
+let socket: WebSocket | null = null
 
 // Format uptime
 function formatUptime(seconds: number): string {
@@ -13,29 +13,48 @@ function formatUptime(seconds: number): string {
   return `${days}d ${hours}h ${minutes}m`
 }
 
-// Update system stats with error handling
+// Establish WebSocket connection
+function setupWebSocket() {
+  const host = window.location.hostname
+  const wsUrl = `ws://${host}:3001`
+
+  // WebSocket create
+  socket = new WebSocket(wsUrl)
+
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data) as Stats
+    stats.value = data
+  }
+
+  socket.onerror = (error) => {
+    console.error('WebSocket Error:', error)
+  }
+
+  socket.onopen = () => {
+    console.log('WebSocket connection established')
+  }
+
+  socket.onclose = () => {
+    console.log('WebSocket connection closed')
+  }
+}
+
 const loadData = async () => {
-  if (loading.value) return
-
-  loading.value = true
-
   return await useFetch('/api/stats')
     .then((res) => {
-      data.value = res.data.value!
+      stats.value = res.data.value!
     })
     .catch((error) => {
       console.error('Error fetching stats:', error)
     })
-    .finally(() => {
-      loading.value = false
-
-      if (import.meta.client) {
-        setTimeout(loadData, 2000)
-      }
-    })
 }
 
 await loadData()
+
+// Lifecycle hooks with cleanup
+onMounted(() => {
+  setupWebSocket() // Start WebSocket connection
+})
 </script>
 
 <template>
@@ -51,137 +70,130 @@ await loadData()
           <h1 class="md:text-3xl text-2xl font-nothing">Connect Pi</h1>
         </div>
       </div>
-
       <!-- Theme and Refresh Controls -->
       <div class="flex items-center space-x-2">
         <ClientOnly>
           <ColorModeButton />
         </ClientOnly>
 
-        <UButton
-          icon="i-heroicons-arrow-path"
-          color="gray"
-          variant="ghost"
-          :loading="loading"
-          @click="loadData()"
-        >
-          Refresh
-        </UButton>
+        <a href="/">
+          <UButton icon="i-heroicons-arrow-path" color="gray" variant="ghost">
+            Refresh
+          </UButton>
+        </a>
       </div>
     </div>
 
-    <div v-if="data">
-      <!-- Stats Overview -->
-      <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <UCard class="u-cart">
-          <template #header>
-            <div class="flex items-center space-x-2">
-              <UIcon
-                name="i-heroicons-cpu-chip"
-                class="text-primary-500 text-xl"
-              />
-              <h3 class="text-base font-medium">CPU Load</h3>
-            </div>
-          </template>
-          <p class="text-2xl font-semibold font-nothing">
-            {{ data.system.cpuUsage.toFixed(2) || '0' }}%
-          </p>
-          <UProgress
-            :value="data.system.cpuUsage || 0"
-            color="primary"
-            class="mt-2"
-          />
-        </UCard>
-
-        <UCard class="u-cart">
-          <template #header>
-            <div class="flex items-center space-x-2">
-              <UIcon
-                name="i-heroicons-circle-stack"
-                class="text-amber-500 text-xl"
-              />
-              <h3 class="text-base font-medium">Memory Usage</h3>
-            </div>
-          </template>
-          <p class="text-2xl font-semibold font-nothing">
-            {{ data.system.memory.usage || '0' }}%
-          </p>
-          <UProgress
-            :value="parseFloat(String(data.system.memory.usage) || '0')"
-            color="amber"
-            class="mt-2"
-          />
-        </UCard>
-
-        <UCard class="u-cart">
-          <template #header>
-            <div class="flex items-center space-x-2">
-              <UIcon name="i-heroicons-signal" class="text-rose-500 text-xl" />
-              <h3 class="text-base font-medium">Network</h3>
-            </div>
-          </template>
-          <p class="text-2xl font-semibold font-nothing">
-            {{ data.network.connectedClients || 0 }}
-          </p>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
-            Connected Clients
-          </p>
-        </UCard>
-
-        <UCard class="u-cart">
-          <template #header>
-            <div class="flex items-center space-x-2">
-              <UIcon name="i-heroicons-clock" class="text-blue-500 text-xl" />
-              <h3 class="text-base font-medium">Uptime</h3>
-            </div>
-          </template>
-          <p class="text-2xl font-semibold font-nothing">
-            {{ formatUptime(data.system.uptime || 0) }}
-          </p>
-        </UCard>
-      </div>
-
-      <!-- Network Status -->
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       <UCard class="u-cart">
         <template #header>
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-medium">Network Status</h3>
-            <UBadge
-              :color="data.v2ray ? 'primary' : 'red'"
-              variant="subtle"
-              class="ml-2"
-            >
-              V2Ray {{ data.v2ray ? 'Active' : 'Inactive' }}
-            </UBadge>
+          <div class="flex items-center space-x-2">
+            <UIcon
+              name="i-heroicons-cpu-chip"
+              class="text-primary-500 text-xl"
+            />
+            <h3 class="text-base font-medium">CPU Load</h3>
           </div>
         </template>
+        <p class="text-2xl font-semibold font-nothing">
+          {{ stats?.system?.cpuUsage?.toFixed(2) || '0' }}%
+        </p>
+        <UProgress
+          :value="stats?.system?.cpuUsage || 0"
+          color="primary"
+          class="mt-2"
+        />
+      </UCard>
 
-        <div class="space-y-4">
-          <div class="flex items-center justify-between">
-            <span class="text-gray-500 dark:text-gray-400">IP Address</span>
-            <span class="font-nothing">
-              {{ data.network.ipAddress || 'N/A' }}
-            </span>
+      <UCard class="u-cart">
+        <template #header>
+          <div class="flex items-center space-x-2">
+            <UIcon
+              name="i-heroicons-circle-stack"
+              class="text-amber-500 text-xl"
+            />
+            <h3 class="text-base font-medium">Memory Usage</h3>
           </div>
-          <div class="flex items-center justify-between">
-            <span class="text-gray-500 dark:text-gray-400">
-              Network Interface
-            </span>
-            <span class="font-nothing">
-              {{ data.network.interface || 'N/A' }}
-            </span>
+        </template>
+        <p class="text-2xl font-semibold font-nothing">
+          {{ stats?.system?.memory?.usage || '0' }}%
+        </p>
+        <UProgress
+          :value="parseFloat(String(stats?.system?.memory?.usage) || '0')"
+          color="amber"
+          class="mt-2"
+        />
+      </UCard>
+
+      <UCard class="u-cart">
+        <template #header>
+          <div class="flex items-center space-x-2">
+            <UIcon name="i-heroicons-signal" class="text-rose-500 text-xl" />
+            <h3 class="text-base font-medium">Network</h3>
           </div>
-          <div class="flex items-center justify-between">
-            <span class="text-gray-500 dark:text-gray-400">
-              Connected Clients
-            </span>
-            <span class="font-nothing">
-              {{ data.network.connectedClients || 0 }}
-            </span>
+        </template>
+        <p class="text-2xl font-semibold font-nothing">
+          {{ stats?.network?.connectedClients || 0 }}
+        </p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Connected Clients
+        </p>
+      </UCard>
+
+      <UCard class="u-cart">
+        <template #header>
+          <div class="flex items-center space-x-2">
+            <UIcon name="i-heroicons-clock" class="text-blue-500 text-xl" />
+            <h3 class="text-base font-medium">Uptime</h3>
           </div>
-        </div>
+        </template>
+        <p class="text-2xl font-semibold font-nothing">
+          {{ formatUptime(stats?.system?.uptime || 0) }}
+        </p>
       </UCard>
     </div>
+
+    <!-- Network Status -->
+    <UCard class="u-cart">
+      <template #header>
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-medium">Network Status</h3>
+          <UBadge
+            :color="stats?.v2ray ? 'primary' : 'red'"
+            variant="subtle"
+            class="ml-2"
+          >
+            V2Ray {{ stats?.v2ray ? 'Active' : 'Inactive' }}
+          </UBadge>
+        </div>
+      </template>
+
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-gray-500 dark:text-gray-400">IP Address</span>
+          <span class="font-nothing">
+            {{ stats?.network?.ipAddress || 'N/A' }}
+          </span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-gray-500 dark:text-gray-400">
+            Network Interface
+          </span>
+          <span class="font-nothing">
+            {{ stats?.network?.interface || 'N/A' }}
+          </span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-gray-500 dark:text-gray-400">
+            Connected Clients
+          </span>
+          <span class="font-nothing">
+            {{ stats?.network?.connectedClients || 0 }}
+          </span>
+        </div>
+      </div>
+    </UCard>
   </UContainer>
 </template>
 
