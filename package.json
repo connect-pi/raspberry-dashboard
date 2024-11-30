@@ -36,6 +36,5 @@
     "vue": "latest",
     "vue-router": "latest",
     "ws": "^8.18.0"
-  },
-  "packageManager": "yarn@4.5.1"
+  }
 }
