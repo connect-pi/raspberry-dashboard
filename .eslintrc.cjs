@@ -10,6 +10,7 @@ module.exports = {
     'plugin:prettier/recommended'
   ],
   rules: {
+    'no-console': 'off',
     'vue/multi-word-component-names': 0
   }
 }

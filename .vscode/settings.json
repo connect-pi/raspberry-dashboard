@@ -1,4 +1,5 @@
 {
+  "editor.formatOnSave": true,
   "better-comments.multilineComments": true,
   "vscodeGitCommit.template": ["({prefix}): {message}"],
   "vscodeGitCommit.variables": {
