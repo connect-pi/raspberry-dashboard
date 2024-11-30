@@ -1,3 +1,62 @@
+<script setup lang="ts">
+import type { Stats } from '~/types/common/Stats'
+
+const stats = ref<Stats>()
+let socket: WebSocket | null = null
+
+// Format uptime
+function formatUptime(seconds: number): string {
+  const days = Math.floor(seconds / 86400)
+  const hours = Math.floor((seconds % 86400) / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+
+  return `${days}d ${hours}h ${minutes}m`
+}
+
+// Establish WebSocket connection
+function setupWebSocket() {
+  const host = window.location.hostname
+  const wsUrl = `ws://${host}:3001`
+
+  // WebSocket create
+  socket = new WebSocket(wsUrl)
+
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data) as Stats
+    stats.value = data
+  }
+
+  socket.onerror = (error) => {
+    console.error('WebSocket Error:', error)
+  }
+
+  socket.onopen = () => {
+    console.log('WebSocket connection established')
+  }
+
+  socket.onclose = () => {
+    console.log('WebSocket connection closed')
+  }
+}
+
+const loadData = async () => {
+  return await useFetch('/api/stats')
+    .then((res) => {
+      stats.value = res.data.value!
+    })
+    .catch((error) => {
+      console.error('Error fetching stats:', error)
+    })
+}
+
+await loadData()
+
+// Lifecycle hooks with cleanup
+onMounted(() => {
+  setupWebSocket() // Start WebSocket connection
+})
+</script>
+
 <template>
   <UContainer class="py-8 chakra-petch-regular">
     <!-- Header -->
@@ -14,7 +73,7 @@
       <!-- Theme and Refresh Controls -->
       <div class="flex items-center space-x-2">
         <ColorModeButton />
-        <UButton
+        <!-- <UButton
           icon="i-heroicons-arrow-path"
           color="gray"
           variant="ghost"
@@ -22,7 +81,7 @@
           @click="refreshData"
         >
           Refresh
-        </UButton>
+        </UButton> -->
       </div>
     </div>
 
@@ -39,10 +98,10 @@
           </div>
         </template>
         <p class="text-2xl font-semibold font-nothing">
-          {{ systemStats?.cpuUsage?.toFixed(2) || '0' }}%
+          {{ stats?.system?.cpuUsage?.toFixed(2) || '0' }}%
         </p>
         <UProgress
-          :value="systemStats?.cpuUsage || 0"
+          :value="stats?.system?.cpuUsage || 0"
           color="primary"
           class="mt-2"
         />
@@ -59,10 +118,10 @@
           </div>
         </template>
         <p class="text-2xl font-semibold font-nothing">
-          {{ systemStats?.memory?.usage || '0' }}%
+          {{ stats?.system?.memory?.usage || '0' }}%
         </p>
         <UProgress
-          :value="parseFloat(systemStats?.memory?.usage || '0')"
+          :value="parseFloat(String(stats?.system?.memory?.usage) || '0')"
           color="amber"
           class="mt-2"
         />
@@ -76,7 +135,7 @@
           </div>
         </template>
         <p class="text-2xl font-semibold font-nothing">
-          {{ systemStats?.network?.connectedClients || 0 }}
+          {{ stats?.network?.connectedClients || 0 }}
         </p>
         <p class="text-sm text-gray-500 dark:text-gray-400">
           Connected Clients
@@ -91,7 +150,7 @@
           </div>
         </template>
         <p class="text-2xl font-semibold font-nothing">
-          {{ formatUptime(systemStats?.uptime || 0) }}
+          {{ formatUptime(stats?.system?.uptime || 0) }}
         </p>
       </UCard>
     </div>
@@ -102,11 +161,11 @@
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-medium">Network Status</h3>
           <UBadge
-            :color="systemStats?.v2rayStatus ? 'primary' : 'red'"
+            :color="stats?.v2ray ? 'primary' : 'red'"
             variant="subtle"
             class="ml-2"
           >
-            V2Ray {{ systemStats?.v2rayStatus ? 'Active' : 'Inactive' }}
+            V2Ray {{ stats?.v2ray ? 'Active' : 'Inactive' }}
           </UBadge>
         </div>
       </template>
@@ -115,7 +174,7 @@
         <div class="flex items-center justify-between">
           <span class="text-gray-500 dark:text-gray-400">IP Address</span>
           <span class="font-nothing">
-            {{ systemStats?.network?.ipAddress || 'N/A' }}
+            {{ stats?.network?.ipAddress || 'N/A' }}
           </span>
         </div>
         <div class="flex items-center justify-between">
@@ -123,7 +182,7 @@
             Network Interface
           </span>
           <span class="font-nothing">
-            {{ systemStats?.network?.interface || 'N/A' }}
+            {{ stats?.network?.interface || 'N/A' }}
           </span>
         </div>
         <div class="flex items-center justify-between">
@@ -131,86 +190,13 @@
             Connected Clients
           </span>
           <span class="font-nothing">
-            {{ systemStats?.network?.connectedClients || 0 }}
+            {{ stats?.network?.connectedClients || 0 }}
           </span>
         </div>
       </div>
     </UCard>
   </UContainer>
 </template>
-
-<script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-
-const systemStats = ref(null)
-const loading = ref(false)
-let refreshInterval: NodeJS.Timer | null = null
-let socket: WebSocket | null = null
-
-// Format uptime
-function formatUptime(seconds: number): string {
-  const days = Math.floor(seconds / 86400)
-  const hours = Math.floor((seconds % 86400) / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-
-  return `${days}d ${hours}h ${minutes}m`
-}
-
-// Establish WebSocket connection
-function setupWebSocket() {
-  socket = new WebSocket('ws://127.0.0.1:3001') // WebSocket server address
-
-  socket.onmessage = (event) => {
-    const data = JSON.parse(event.data)
-    systemStats.value = data
-  }
-
-  socket.onerror = (error) => {
-    console.error('WebSocket Error:', error)
-  }
-
-  socket.onopen = () => {
-    console.log('WebSocket connection established')
-  }
-
-  socket.onclose = () => {
-    console.log('WebSocket connection closed')
-  }
-}
-
-// Refresh data function
-function refreshData() {
-  loading.value = true
-  // Re-establish WebSocket connection to refresh data
-  if (socket) {
-    socket.close()
-  }
-  setupWebSocket() // Restart WebSocket connection
-  loading.value = false
-}
-
-// Start periodic refresh every 10 seconds
-function startRefreshInterval() {
-  refreshInterval = setInterval(() => {
-    refreshData() // Call the refresh function
-  }, 10000) // 10 seconds
-}
-
-// Lifecycle hooks with cleanup
-onMounted(() => {
-  setupWebSocket() // Start WebSocket connection
-  startRefreshInterval() // Start periodic refresh
-})
-
-onBeforeUnmount(() => {
-  if (refreshInterval) {
-    clearInterval(refreshInterval) // Clear the interval on component unmount
-  }
-  if (socket) {
-    socket.close() // Close WebSocket connection on component unmount
-  }
-})
-</script>
 
 <style>
 body {
