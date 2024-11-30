@@ -28,6 +28,10 @@ const loadData = async () => {
     })
     .finally(() => {
       loading.value = false
+
+      if (import.meta.client) {
+        setTimeout(loadData, 2000)
+      }
     })
 }
 
