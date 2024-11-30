@@ -14,37 +14,37 @@ function formatUptime(seconds: number): string {
 }
 
 // Establish WebSocket connection
-// function setupWebSocket() {
-//   const host = window.location.hostname
-//   const wsUrl = `ws://${host}:3001`
+function setupWebSocket() {
+  const host = window.location.hostname
+  const wsUrl = `ws://${host}:3001`
 
-//   // WebSocket create
-//   socket = new WebSocket(wsUrl)
+  // WebSocket create
+  socket = new WebSocket(wsUrl)
 
-//   socket.onmessage = (event) => {
-//     const data = JSON.parse(event.data) as Stats
-//     stats.value = data
-//   }
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data) as Stats
+    stats.value = data
+  }
 
-//   socket.onerror = (error) => {
-//     console.error('WebSocket Error:', error)
-//   }
+  socket.onerror = (error) => {
+    console.error('WebSocket Error:', error)
+  }
 
-//   socket.onopen = () => {
-//     console.log('WebSocket connection established')
-//   }
+  socket.onopen = () => {
+    console.log('WebSocket connection established')
+  }
 
-//   socket.onclose = () => {
-//     console.log('WebSocket connection closed')
-//   }
-// }
+  socket.onclose = () => {
+    console.log('WebSocket connection closed')
+  }
+}
 
 const loadData = async () => {
   return await useFetch('/api/stats')
     .then((res) => {
       stats.value = res.data.value!
 
-      setTimeout(loadData, 500)
+      // setTimeout(loadData, 500)
     })
     .catch((error) => {
       console.error('Error fetching stats:', error)
@@ -54,9 +54,9 @@ const loadData = async () => {
 await loadData()
 
 // Lifecycle hooks with cleanup
-// onMounted(() => {
-//   setupWebSocket() // Start WebSocket connection
-// })
+onMounted(() => {
+  setupWebSocket() // Start WebSocket connection
+})
 </script>
 
 <template>

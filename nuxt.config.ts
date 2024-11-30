@@ -18,5 +18,9 @@ export default defineNuxtConfig({
     port: 3000
   },
 
+  nitro: {
+    plugins: ['~/server/plugins/websocket']
+  },
+
   compatibilityDate: '2024-11-30'
 })
