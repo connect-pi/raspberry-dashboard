@@ -72,16 +72,15 @@ onMounted(() => {
       </div>
       <!-- Theme and Refresh Controls -->
       <div class="flex items-center space-x-2">
-        <ColorModeButton />
-        <!-- <UButton
-          icon="i-heroicons-arrow-path"
-          color="gray"
-          variant="ghost"
-          :loading="loading"
-          @click="refreshData"
-        >
-          Refresh
-        </UButton> -->
+        <ClientOnly>
+          <ColorModeButton />
+        </ClientOnly>
+
+        <a href="/">
+          <UButton icon="i-heroicons-arrow-path" color="gray" variant="ghost">
+            Refresh
+          </UButton>
+        </a>
       </div>
     </div>
 
