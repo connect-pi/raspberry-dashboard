@@ -1,43 +1,3 @@
-<script setup lang="ts">
-import type { Stats } from '~/types/common/Stats'
-
-const data = ref<Stats>()
-const loading = ref(false)
-
-// Format uptime
-function formatUptime(seconds: number): string {
-  const days = Math.floor(seconds / 86400)
-  const hours = Math.floor((seconds % 86400) / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-
-  return `${days}d ${hours}h ${minutes}m`
-}
-
-// Update system stats with error handling
-const loadData = async () => {
-  if (loading.value) return
-
-  loading.value = true
-
-  return await useFetch('/api/stats')
-    .then((res) => {
-      data.value = res.data.value!
-    })
-    .catch((error) => {
-      console.error('Error fetching stats:', error)
-    })
-    .finally(() => {
-      loading.value = false
-
-      if (import.meta.client) {
-        setTimeout(loadData, 2000)
-      }
-    })
-}
-
-await loadData()
-</script>
-
 <template>
   <UContainer class="py-8 chakra-petch-regular">
     <!-- Header -->
@@ -51,139 +11,206 @@ await loadData()
           <h1 class="md:text-3xl text-2xl font-nothing">Connect Pi</h1>
         </div>
       </div>
-
       <!-- Theme and Refresh Controls -->
       <div class="flex items-center space-x-2">
-        <ClientOnly>
-          <ColorModeButton />
-        </ClientOnly>
-
+        <ColorModeButton />
         <UButton
           icon="i-heroicons-arrow-path"
           color="gray"
           variant="ghost"
           :loading="loading"
-          @click="loadData()"
+          @click="refreshData"
         >
           Refresh
         </UButton>
       </div>
     </div>
 
-    <div v-if="data">
-      <!-- Stats Overview -->
-      <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <UCard class="u-cart">
-          <template #header>
-            <div class="flex items-center space-x-2">
-              <UIcon
-                name="i-heroicons-cpu-chip"
-                class="text-primary-500 text-xl"
-              />
-              <h3 class="text-base font-medium">CPU Load</h3>
-            </div>
-          </template>
-          <p class="text-2xl font-semibold font-nothing">
-            {{ data.system.cpuUsage.toFixed(2) || '0' }}%
-          </p>
-          <UProgress
-            :value="data.system.cpuUsage || 0"
-            color="primary"
-            class="mt-2"
-          />
-        </UCard>
-
-        <UCard class="u-cart">
-          <template #header>
-            <div class="flex items-center space-x-2">
-              <UIcon
-                name="i-heroicons-circle-stack"
-                class="text-amber-500 text-xl"
-              />
-              <h3 class="text-base font-medium">Memory Usage</h3>
-            </div>
-          </template>
-          <p class="text-2xl font-semibold font-nothing">
-            {{ data.system.memory.usage || '0' }}%
-          </p>
-          <UProgress
-            :value="parseFloat(String(data.system.memory.usage) || '0')"
-            color="amber"
-            class="mt-2"
-          />
-        </UCard>
-
-        <UCard class="u-cart">
-          <template #header>
-            <div class="flex items-center space-x-2">
-              <UIcon name="i-heroicons-signal" class="text-rose-500 text-xl" />
-              <h3 class="text-base font-medium">Network</h3>
-            </div>
-          </template>
-          <p class="text-2xl font-semibold font-nothing">
-            {{ data.network.connectedClients || 0 }}
-          </p>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
-            Connected Clients
-          </p>
-        </UCard>
-
-        <UCard class="u-cart">
-          <template #header>
-            <div class="flex items-center space-x-2">
-              <UIcon name="i-heroicons-clock" class="text-blue-500 text-xl" />
-              <h3 class="text-base font-medium">Uptime</h3>
-            </div>
-          </template>
-          <p class="text-2xl font-semibold font-nothing">
-            {{ formatUptime(data.system.uptime || 0) }}
-          </p>
-        </UCard>
-      </div>
-
-      <!-- Network Status -->
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       <UCard class="u-cart">
         <template #header>
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-medium">Network Status</h3>
-            <UBadge
-              :color="data.v2ray ? 'primary' : 'red'"
-              variant="subtle"
-              class="ml-2"
-            >
-              V2Ray {{ data.v2ray ? 'Active' : 'Inactive' }}
-            </UBadge>
+          <div class="flex items-center space-x-2">
+            <UIcon
+              name="i-heroicons-cpu-chip"
+              class="text-primary-500 text-xl"
+            />
+            <h3 class="text-base font-medium">CPU Load</h3>
           </div>
         </template>
+        <p class="text-2xl font-semibold font-nothing">
+          {{ systemStats?.cpuUsage?.toFixed(2) || '0' }}%
+        </p>
+        <UProgress
+          :value="systemStats?.cpuUsage || 0"
+          color="primary"
+          class="mt-2"
+        />
+      </UCard>
 
-        <div class="space-y-4">
-          <div class="flex items-center justify-between">
-            <span class="text-gray-500 dark:text-gray-400">IP Address</span>
-            <span class="font-nothing">
-              {{ data.network.ipAddress || 'N/A' }}
-            </span>
+      <UCard class="u-cart">
+        <template #header>
+          <div class="flex items-center space-x-2">
+            <UIcon
+              name="i-heroicons-circle-stack"
+              class="text-amber-500 text-xl"
+            />
+            <h3 class="text-base font-medium">Memory Usage</h3>
           </div>
-          <div class="flex items-center justify-between">
-            <span class="text-gray-500 dark:text-gray-400">
-              Network Interface
-            </span>
-            <span class="font-nothing">
-              {{ data.network.interface || 'N/A' }}
-            </span>
+        </template>
+        <p class="text-2xl font-semibold font-nothing">
+          {{ systemStats?.memory?.usage || '0' }}%
+        </p>
+        <UProgress
+          :value="parseFloat(systemStats?.memory?.usage || '0')"
+          color="amber"
+          class="mt-2"
+        />
+      </UCard>
+
+      <UCard class="u-cart">
+        <template #header>
+          <div class="flex items-center space-x-2">
+            <UIcon name="i-heroicons-signal" class="text-rose-500 text-xl" />
+            <h3 class="text-base font-medium">Network</h3>
           </div>
-          <div class="flex items-center justify-between">
-            <span class="text-gray-500 dark:text-gray-400">
-              Connected Clients
-            </span>
-            <span class="font-nothing">
-              {{ data.network.connectedClients || 0 }}
-            </span>
+        </template>
+        <p class="text-2xl font-semibold font-nothing">
+          {{ systemStats?.network?.connectedClients || 0 }}
+        </p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Connected Clients
+        </p>
+      </UCard>
+
+      <UCard class="u-cart">
+        <template #header>
+          <div class="flex items-center space-x-2">
+            <UIcon name="i-heroicons-clock" class="text-blue-500 text-xl" />
+            <h3 class="text-base font-medium">Uptime</h3>
           </div>
-        </div>
+        </template>
+        <p class="text-2xl font-semibold font-nothing">
+          {{ formatUptime(systemStats?.uptime || 0) }}
+        </p>
       </UCard>
     </div>
+
+    <!-- Network Status -->
+    <UCard class="u-cart">
+      <template #header>
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-medium">Network Status</h3>
+          <UBadge
+            :color="systemStats?.v2rayStatus ? 'primary' : 'red'"
+            variant="subtle"
+            class="ml-2"
+          >
+            V2Ray {{ systemStats?.v2rayStatus ? 'Active' : 'Inactive' }}
+          </UBadge>
+        </div>
+      </template>
+
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="text-gray-500 dark:text-gray-400">IP Address</span>
+          <span class="font-nothing">
+            {{ systemStats?.network?.ipAddress || 'N/A' }}
+          </span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-gray-500 dark:text-gray-400">
+            Network Interface
+          </span>
+          <span class="font-nothing">
+            {{ systemStats?.network?.interface || 'N/A' }}
+          </span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-gray-500 dark:text-gray-400">
+            Connected Clients
+          </span>
+          <span class="font-nothing">
+            {{ systemStats?.network?.connectedClients || 0 }}
+          </span>
+        </div>
+      </div>
+    </UCard>
   </UContainer>
 </template>
+
+<script setup lang="ts">
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+
+const systemStats = ref(null)
+const loading = ref(false)
+let refreshInterval: NodeJS.Timer | null = null
+let socket: WebSocket | null = null
+
+// Format uptime
+function formatUptime(seconds: number): string {
+  const days = Math.floor(seconds / 86400)
+  const hours = Math.floor((seconds % 86400) / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+
+  return `${days}d ${hours}h ${minutes}m`
+}
+
+// Establish WebSocket connection
+function setupWebSocket() {
+  socket = new WebSocket('ws://127.0.0.1:3001') // WebSocket server address
+
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data)
+    systemStats.value = data
+  }
+
+  socket.onerror = (error) => {
+    console.error('WebSocket Error:', error)
+  }
+
+  socket.onopen = () => {
+    console.log('WebSocket connection established')
+  }
+
+  socket.onclose = () => {
+    console.log('WebSocket connection closed')
+  }
+}
+
+// Refresh data function
+function refreshData() {
+  loading.value = true
+  // Re-establish WebSocket connection to refresh data
+  if (socket) {
+    socket.close()
+  }
+  setupWebSocket() // Restart WebSocket connection
+  loading.value = false
+}
+
+// Start periodic refresh every 10 seconds
+function startRefreshInterval() {
+  refreshInterval = setInterval(() => {
+    refreshData() // Call the refresh function
+  }, 10000) // 10 seconds
+}
+
+// Lifecycle hooks with cleanup
+onMounted(() => {
+  setupWebSocket() // Start WebSocket connection
+  startRefreshInterval() // Start periodic refresh
+})
+
+onBeforeUnmount(() => {
+  if (refreshInterval) {
+    clearInterval(refreshInterval) // Clear the interval on component unmount
+  }
+  if (socket) {
+    socket.close() // Close WebSocket connection on component unmount
+  }
+})
+</script>
 
 <style>
 body {
