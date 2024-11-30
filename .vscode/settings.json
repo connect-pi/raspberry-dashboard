@@ -1,0 +1,33 @@
+{
+  "better-comments.multilineComments": true,
+  "vscodeGitCommit.template": ["({prefix}): {message}"],
+  "vscodeGitCommit.variables": {
+    "prefix": [
+      {
+        "label": "✨ Feat"
+      },
+      {
+        "label": "🐛 Fix"
+      },
+      {
+        "label": "♻️ Refactor"
+      },
+      {
+        "label": "⚙ Config"
+      },
+      {
+        "label": "🔥 Remove"
+      },
+      {
+        "label": "🎨 style"
+      },
+      {
+        "label": "🐎 Performance"
+      },
+      {
+        "label": "🔒 secFix"
+      }
+    ]
+  },
+  "css.lint.unknownAtRules": "ignore"
+}

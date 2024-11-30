@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "aaron-bond.better-comments",
+    "dbaeumer.vscode-eslint",
+    "rioukkevin.vscode-git-commit",
+    "bradlc.vscode-tailwindcss"
+  ]
+}
