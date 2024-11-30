@@ -1,8 +1,9 @@
 import { getSystemStats } from '../utils/system'
 import { getNetworkInfo } from '../utils/network'
 import { getV2rayStatus } from '../utils/v2ray'
+import type { Stats } from '~/types/common/Stats'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (): Promise<Stats> => {
   try {
     const [systemStats, networkInfo, v2rayStatus] = await Promise.all([
       getSystemStats(),
@@ -11,9 +12,9 @@ export default defineEventHandler(async () => {
     ])
 
     return {
-      ...systemStats,
+      system: systemStats,
       network: networkInfo,
-      v2rayStatus
+      v2ray: v2rayStatus
     }
   } catch (error) {
     console.error('Error fetching stats:', error)

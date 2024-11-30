@@ -1,14 +1,5 @@
 import os from 'os'
-
-export interface SystemStats {
-  memory: {
-    total: number
-    free: number
-    usage: number
-  }
-  cpuUsage: number
-  uptime: number
-}
+import { SystemStats } from '~/types/common/Stats'
 
 export function getSystemStats(): SystemStats {
   return {

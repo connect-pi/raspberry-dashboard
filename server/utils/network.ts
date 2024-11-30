@@ -1,13 +1,8 @@
 import { exec } from 'child_process'
 import { promisify } from 'util'
+import { NetworkInfo } from '~/types/common/Stats'
 
 const execAsync = promisify(exec)
-
-export interface NetworkInfo {
-  ipAddress: string
-  interface: string
-  connectedClients: number
-}
 
 export async function getNetworkInfo(): Promise<NetworkInfo> {
   try {
@@ -42,7 +37,7 @@ export async function getNetworkInfo(): Promise<NetworkInfo> {
     console.error('Error getting network info:', error)
     return {
       ipAddress: 'N/A',
-      interface: 'Error',
+      interface: 'N/A',
       connectedClients: 0
     }
   }
