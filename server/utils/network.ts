@@ -19,7 +19,9 @@ export async function getNetworkInfo(): Promise<NetworkInfo> {
     let connectedClients = 0
     try {
       // First try with iw
-      const { stdout } = await execAsync('iw dev wlan0 station dump | grep Station | wc -l')
+      const { stdout } = await execAsync(
+        'iw dev wlan0 station dump | grep Station | wc -l'
+      )
       connectedClients = parseInt(stdout.trim()) || 0
     } catch {
       try {
@@ -30,7 +32,7 @@ export async function getNetworkInfo(): Promise<NetworkInfo> {
         console.error('Failed to get client count:', e)
       }
     }
-    
+
     return {
       ipAddress,
       interface: 'wlan0',

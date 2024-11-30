@@ -1132,7 +1132,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/devtools@npm:^1.6.0, @nuxt/devtools@npm:latest":
+"@nuxt/devtools@npm:^1.6.0":
   version: 1.6.1
   resolution: "@nuxt/devtools@npm:1.6.1"
   dependencies:
@@ -7847,7 +7847,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "nuxt-app@workspace:."
   dependencies:
-    "@nuxt/devtools": "npm:latest"
     "@nuxt/kit": "npm:^3.14.1592"
     "@nuxt/ui": "npm:^2.19.2"
     "@nuxtjs/eslint-config-typescript": "npm:^12.1.0"

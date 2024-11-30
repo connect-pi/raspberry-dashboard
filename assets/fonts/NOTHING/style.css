@@ -1,13 +1,14 @@
 @font-face {
-    font-family: 'Nothing';
-    src: url('NOTHING.otf.woff2') format('woff2'),
-         url('NOTHING.otf.woff') format('woff'),
-         url('NOTHING.otf.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
+  font-family: 'Nothing';
+  src:
+    url('NOTHING.otf.woff2') format('woff2'),
+    url('NOTHING.otf.woff') format('woff'),
+    url('NOTHING.otf.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
 }
 
 .font-nothing {
-    font-family: 'Nothing', 'Chakra Petch', sans-serif;
-    text-transform: uppercase;
+  font-family: 'Nothing', 'Chakra Petch', sans-serif;
+  text-transform: uppercase;
 }
